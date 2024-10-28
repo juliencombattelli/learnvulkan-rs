@@ -1,61 +1,34 @@
-use winit::application::ApplicationHandler;
-use winit::event::WindowEvent;
-use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
-use winit::window::{Window, WindowId};
-
-#[derive(Default)]
-struct App {
-    window: Option<Window>,
-}
-
-impl ApplicationHandler for App {
-    fn resumed(&mut self, event_loop: &ActiveEventLoop) {
-        self.window = Some(
-            event_loop
-                .create_window(Window::default_attributes())
-                .unwrap(),
-        );
-    }
-
-    fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
-        match event {
-            WindowEvent::CloseRequested => {
-                println!("The close button was pressed; stopping");
-                event_loop.exit();
-            }
-            WindowEvent::RedrawRequested => {
-                // Redraw the application.
-                //
-                // It's preferable for applications that do not render continuously to render in
-                // this event rather than in AboutToWait, since rendering in here allows
-                // the program to gracefully handle redraws requested by the OS.
-
-                // Draw.
-
-                // Queue a RedrawRequested event.
-                //
-                // You only need to call this if you've determined that you need to redraw in
-                // applications which do not always need to. Applications that redraw continuously
-                // can render here instead.
-                self.window.as_ref().unwrap().request_redraw();
-            }
-            _ => (),
-        }
-    }
-}
+use glfw::{log_errors, Context};
 
 fn main() {
-    let event_loop = EventLoop::new().unwrap();
+    let mut glfw = glfw::init(log_errors!()).unwrap();
 
-    // ControlFlow::Poll continuously runs the event loop, even if the OS hasn't
-    // dispatched any events. This is ideal for games and similar applications.
-    event_loop.set_control_flow(ControlFlow::Poll);
+    glfw.window_hint(glfw::WindowHint::ClientApi(glfw::ClientApiHint::NoApi));
 
-    // ControlFlow::Wait pauses the event loop if no events are available to process.
-    // This is ideal for non-game applications that only update in response to user
-    // input, and uses significantly less power/CPU time than ControlFlow::Poll.
-    event_loop.set_control_flow(ControlFlow::Wait);
+    // Create a windowed mode window and its OpenGL context
+    let (mut window, events) = glfw
+        .create_window(800, 600, "Hello this is window", glfw::WindowMode::Windowed)
+        .expect("Failed to create GLFW window.");
 
-    let mut app = App::default();
-    let _ = event_loop.run_app(&mut app);
+    // Make the window's context current
+    window.make_current();
+    window.set_key_polling(true);
+
+    // Loop until the user closes the window
+    while !window.should_close() {
+        // Swap front and back buffers
+        window.swap_buffers();
+
+        // Poll for and process events
+        glfw.poll_events();
+        for (_, event) in glfw::flush_messages(&events) {
+            println!("{:?}", event);
+            match event {
+                glfw::WindowEvent::Key(glfw::Key::Escape, _, glfw::Action::Press, _) => {
+                    window.set_should_close(true)
+                }
+                _ => {}
+            }
+        }
+    }
 }
