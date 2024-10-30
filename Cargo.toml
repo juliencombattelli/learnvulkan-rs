@@ -4,5 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-glfw = { version = "0.58.0", features = ["vulkan"] }
-ash = "0.38.0"
+glfw = { version = "0.57", default-features = false, features = ["vulkan", "raw-window-handle-v0-5"] }
+ash = "0.37"
+vulkano = "0.34"
+vulkano-shaders = "0.34"
+raw-window-handle = "0.5"
